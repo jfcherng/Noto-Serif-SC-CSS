@@ -8,16 +8,17 @@ from typing import Iterable, List, Match, Optional
 from urllib.parse import urlparse
 
 # config file
-from download_config import FONT_LANG, FONT_STYLES
+from download_config import FONT_TYPE, FONT_LANG, FONT_STYLES
+
+FONT_TYPE_LOWER = FONT_TYPE.lower()
+FONT_LANG_LOWER = FONT_LANG.lower()
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 # fmt: off
-CSS_URL_PTN = "https://fonts.googleapis.com/css2?family=Noto+Serif+{font_lang}:wght@{font_weight}&display=swap"
+CSS_URL_PTN = "https://fonts.googleapis.com/css2?family=Noto+{font_type}+{font_lang}:wght@{font_weight}&display=swap"
 RE_URL = re.compile(r"https?://[a-z0-9@~_+\-*/&=#%|:.,!?]+(?<=[a-z0-9@~_+\-*/&=#%|])", re.IGNORECASE)
 # fmt: on
-
-FONT_LANG_LOWER = FONT_LANG.lower()
 
 REQUESTS_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36",
@@ -52,11 +53,24 @@ async def download_font_parts(urls: Iterable[str], save_ptn: Optional[str] = Non
 
 
 for font_style, font_weight in FONT_STYLES.items():
-    output_dir = os.path.join(SCRIPT_DIR, "build", f"noto_serif_{FONT_LANG_LOWER}_{font_style}")
+    # fmt: off
+    output_dir = os.path.join(
+        SCRIPT_DIR,
+        "build",
+        f"noto_{FONT_TYPE_LOWER}_{FONT_LANG_LOWER}_{font_style}",
+    )
+    # fmt: on
+
     os.makedirs(output_dir, exist_ok=True)
 
     r = requests.get(
-        CSS_URL_PTN.format_map({"font_lang": FONT_LANG, "font_weight": font_weight}),
+        # fmt: off
+        CSS_URL_PTN.format_map({
+            "font_type": FONT_TYPE,
+            "font_lang": FONT_LANG,
+            "font_weight": font_weight,
+        }),
+        # fmt: on
         headers=REQUESTS_HEADERS,
     )
 
